@@ -113,7 +113,7 @@ class SettingsSection {
     });
   }
 
-  getFieldValue = (nameId: string): any => {
+  getFieldValue = <Type,>(nameId: string): Type => {
     return JSON.parse(Spicetify.LocalStorage.get(`${this.settingsId}.${nameId}`) || "{}")?.value;
   }
 
