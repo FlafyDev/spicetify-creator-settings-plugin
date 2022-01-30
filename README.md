@@ -19,7 +19,7 @@ async function main() {
     Spicetify.showNotification(settings.getFieldValue("your-name") as string);
   });
 
-  settings.addButton("button-1", "Press the button to randomize your name", "Randomize my name", () => {
+  settings.addButton("button-2", "Press the button to randomize your name", "Randomize my name", () => {
     settings.setFieldValue("your-name", (Math.random() + 1).toString(36).substring(2));
     settings.rerender();
   });
