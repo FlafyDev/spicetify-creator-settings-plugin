@@ -92,6 +92,14 @@ class SettingsSection {
     });
   }
 
+  addHidden = (nameId: string, defaultValue: any) => {
+    this.settingsFields.push({
+      type: "hidden",
+      nameId: nameId,
+      defaultValue: defaultValue,
+    })
+  }
+
   addToggle = (nameId: string, description: string, defaultValue: boolean, onInput?: () => void) => {
     this.settingsFields.push({
       type: "toggle",
@@ -137,13 +145,17 @@ class SettingsSection {
     const id = `${this.settingsId}.${props.field.nameId}`;
     
     let defaultStateValue;
-    if (props.field.type != "button") {
+    if (props.field.type === "button") {
+      defaultStateValue = props.field.defaultValue;
+    } else {
       if (this.getFieldValue(props.field.nameId) === undefined) {
         this.setFieldValue(props.field.nameId, props.field.defaultValue);
       }
       defaultStateValue = this.getFieldValue(props.field.nameId);
-    } else {
-      defaultStateValue = props.field.defaultValue;
+    }
+
+    if (props.field.type === "hidden") {
+      return <></>
     }
 
     const [value, setValueState] = useState(defaultStateValue);
@@ -159,7 +171,7 @@ class SettingsSection {
 
     return <>
       <div className="main-type-mesto" style={{color: 'var(--spice-subtext)'}}><label htmlFor={id}>
-        {props.field.description}
+        {props.field.description || ""}
       </label></div>
       <span className="x-settings-secondColumn">
         {
@@ -207,9 +219,9 @@ class SettingsSection {
 }
 
 interface SettingsField {
-  type: "button" | "toggle" | "input" | "dropdown",
+  type: "button" | "toggle" | "input" | "dropdown" | "hidden",
   nameId: string,
-  description: string,
+  description?: string,
   defaultValue: any,
   callback?: () => void,
   options?: string[],
