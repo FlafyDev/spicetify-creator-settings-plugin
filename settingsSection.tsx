@@ -7,9 +7,7 @@ class SettingsSection {
   private stopHistoryListener: any;
   private setRerender: Function | null = null;
 
-  constructor(public name: string, public settingsId: string) {
-    settingsId += '.settings';
-  }
+  constructor(public name: string, public settingsId: string) { }
 
   pushSettings = async () => {
     while (!Spicetify?.Platform?.History?.listen) {
