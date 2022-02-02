@@ -3,13 +3,19 @@ import ReactDOM from 'react-dom';
 import styles from './settings.module.css'
 
 class SettingsSection {
-  settingsFields: SettingsField[] = [];
+  settingsFields: {[nameId: string]: ISettingsField} = { };
   private stopHistoryListener: any;
   private setRerender: Function | null = null;
 
   constructor(public name: string, public settingsId: string) { }
 
   pushSettings = async () => {
+    Object.entries(this.settingsFields).map(([nameId, field]) => {
+      if (field.type !== 'button' && this.getFieldValue(nameId) === undefined) {
+        this.setFieldValue(nameId, field.defaultValue);
+      }
+    });
+
     while (!Spicetify?.Platform?.History?.listen) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
@@ -71,52 +77,47 @@ class SettingsSection {
   }
   
   addButton = (nameId: string, description: string, value: string, onClick?: () => void) => {
-    this.settingsFields.push({
+    this.settingsFields[nameId] = {
       type: "button",
-      nameId: nameId,
       description: description,
       defaultValue: value,
       callback: onClick,
-    });
+    };
   }
 
   addInput = (nameId: string, description: string, defaultValue: string, onChange?: () => void) => {
-    this.settingsFields.push({
+    this.settingsFields[nameId] = {
       type: "input",
-      nameId: nameId,
       description: description,
       defaultValue: defaultValue,
       callback: onChange,
-    });
+    };
   }
 
   addHidden = (nameId: string, defaultValue: any) => {
-    this.settingsFields.push({
+    this.settingsFields[nameId] = {
       type: "hidden",
-      nameId: nameId,
       defaultValue: defaultValue,
-    })
+    };
   }
 
   addToggle = (nameId: string, description: string, defaultValue: boolean, onInput?: () => void) => {
-    this.settingsFields.push({
+    this.settingsFields[nameId] = {
       type: "toggle",
-      nameId: nameId,
       description: description,
       defaultValue: defaultValue,
       callback: onInput,
-    });
+    };
   }
 
   addDropDown = (nameId: string, description: string, options: string[], defaultIndex: number, onSelect?: () => void) => {
-    this.settingsFields.push({
+    this.settingsFields[nameId] = {
       type: "dropdown",
-      nameId: nameId,
       description: description,
       defaultValue: options[defaultIndex],
       callback: onSelect,
       options: options,
-    });
+    };
   }
 
   getFieldValue = <Type,>(nameId: string): Type => {
@@ -133,23 +134,20 @@ class SettingsSection {
 
     return <div className={styles.settingsContainer} key={rerender}>
       <h2 className="main-shelf-title main-type-cello">{this.name}</h2>
-      {this.settingsFields.map(field => {
-        return <this.Field field={field} />
+      {Object.entries(this.settingsFields).map(([nameId, field]) => {
+        return <this.Field nameId={nameId} field={field} />
       })}
     </div>
   }
 
-  private Field = (props: {field: SettingsField}) => {
-    const id = `${this.settingsId}.${props.field.nameId}`;
+  private Field = (props: {nameId: string, field: ISettingsField}) => {
+    const id = `${this.settingsId}.${props.nameId}`;
     
     let defaultStateValue;
     if (props.field.type === "button") {
       defaultStateValue = props.field.defaultValue;
     } else {
-      if (this.getFieldValue(props.field.nameId) === undefined) {
-        this.setFieldValue(props.field.nameId, props.field.defaultValue);
-      }
-      defaultStateValue = this.getFieldValue(props.field.nameId);
+      defaultStateValue = this.getFieldValue(props.nameId);
     }
 
     if (props.field.type === "hidden") {
@@ -161,7 +159,7 @@ class SettingsSection {
     const setValue = (newValue?: any) => {
       if (newValue !== undefined) {
         setValueState(newValue);
-        this.setFieldValue(props.field.nameId!, newValue);
+        this.setFieldValue(props.nameId!, newValue);
       }
       if (props.field.callback)
         props.field.callback();
@@ -216,9 +214,8 @@ class SettingsSection {
 
 }
 
-interface SettingsField {
+interface ISettingsField {
   type: "button" | "toggle" | "input" | "dropdown" | "hidden",
-  nameId: string,
   description?: string,
   defaultValue: any,
   callback?: () => void,
