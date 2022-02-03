@@ -59,13 +59,32 @@ class SettingsSection {
       pluginSettingsContainer = document.createElement('div');
       pluginSettingsContainer.id = this.settingsId;
       pluginSettingsContainer.className = styles.settingsContainer;
-      let advancedOptionsButton: Element | undefined;
-      const buttons = allSettingsContainer.getElementsByClassName('x-settings-button')
-      for (let i = 0; i < buttons.length; i++) {
-        if (buttons[i].children[0].textContent === 'Show advanced settings') {
-          advancedOptionsButton = buttons[i]
-          break;
+      let advancedOptionsButton: Element | null = null;
+      let tries = 0;
+
+      // Loop until "show advanced settings" button is found.
+      while (true) {
+        try {
+          const buttons = allSettingsContainer.getElementsByClassName('x-settings-button');
+          for (let i = 0; i < buttons.length; i++) {
+            if (buttons[i].children[0].textContent?.toLowerCase().endsWith('advanced settings')) {
+              advancedOptionsButton = buttons[i];
+              break;
+            }
+          }
+        } catch (e) {
+          console.error("Error while finding \"show advanced settings\" button:", e);
         }
+        
+        if (advancedOptionsButton) break
+        if (Spicetify.Platform.History.location.pathname !== '/preferences') {
+          console.log(`Couldn't find \"show advanced settings\" button after ${tries} tries.`);
+          return;
+        }
+
+        tries++;
+        console.log("Couldn't find \"show advanced settings\" button. Trying again in 1000ms...");
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
   
       allSettingsContainer.insertBefore(pluginSettingsContainer, advancedOptionsButton!);
@@ -177,7 +196,7 @@ class SettingsSection {
             }} /> :
 
           props.field.type === 'button' ? 
-            <span className="x-settings-button">
+            <span className="">
               <button id={id} onClick={() => {
                 setValue();
               }} className="main-buttons-button main-button-outlined" type="button">
