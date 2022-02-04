@@ -1,3 +1,4 @@
+# Moved to [Spicetify Creator Plugins](https://github.com/FlafyDev/spicetify-creator-plugins)
 # Spicetify Creator - Settings Plugin
 A Plugin for [Spicetify Creator](https://github.com/FlafyDev/spicetify-creator) to easily create settings for your extension
 
